@@ -90,7 +90,7 @@ function getTrackingKey(url) {
 async function shouldTrackUrl(url) {
   return new Promise((resolve) => {
     chrome.storage.sync.get(['domainPatterns', 'mode'], (data) => {
-      let mode = data.mode || 'all'; // 'all' or 'specific'
+      let mode = data.mode || 'specific'; // 'all' or 'specific'
       domainPatterns = data.domainPatterns || [];
 
       // Smart fallback: If specific mode but no patterns, default to all

@@ -348,10 +348,6 @@
     align-items: center;
 }
 
-.popup-header .flex {
-    align-items: center;
-}
-
 /* Remove body margin for popup */
 body {
     margin: 0;
@@ -365,8 +361,6 @@ body {
 .popup-card {
     transition: all 0.1s ease;
 }
-
-/* Remove hover effect to save vertical space from shadow */
 
 /* Active mode badge */
 #current-mode {

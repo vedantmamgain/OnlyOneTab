@@ -122,7 +122,7 @@ function autoSaveMode(mode) {
 function loadSettings() {
     chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
         // Set mode - use toggle instead of radio buttons
-        let mode = data.mode || 'all';
+        let mode = data.mode || 'specific';
         const patterns = data.domainPatterns || [];
 
         // Smart fallback: If specific mode but no patterns, switch to all
