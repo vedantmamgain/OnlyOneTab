@@ -245,6 +245,12 @@ body {
     font-weight: 500;
 }
 
+/* Enhanced label styles */
+label.text-sm.font-medium {
+    font-weight: 600;
+    color: hsl(var(--foreground));
+}
+
 .text-muted-foreground {
     color: hsl(var(--muted-foreground));
 }

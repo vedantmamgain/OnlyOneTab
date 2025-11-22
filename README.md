@@ -1,15 +1,4 @@
-Here is a significantly improved version of your README.
-
-### **What I improved:**
-
-1.  **Stronger Hook:** I changed the opening to focus on the *value* (productivity, focus) rather than just the *function*.
-2.  **Visual Hierarchy:** I replaced the nested lists with a **Table** for the Pattern Logic. This makes the complex "Subdomain vs. Wildcard" logic much easier to understand at a glance.
-3.  **"Recipes" over "Testing":** I renamed the "Testing" section to "Common Recipes." Users don't want to "test" your software; they want to know how to configure it for their specific needs (like GitHub or Notion).
-4.  **Dev vs. User Separation:** I moved the file tree and icon generation script to a "Development" section at the end. General users don't need to see that first.
-
------
-
-# OnlyOneTab 🚀
+## OnlyOneTab 🚀
 
 **Focus on the task, not the clutter.**
 

@@ -259,10 +259,10 @@ function validatePattern(pattern, type) {
     return /^[a-zA-Z0-9][a-zA-Z0-9-_.]*[a-zA-Z0-9]$/.test(pattern);
 }
 
-// Add pattern
+// Add pattern with auto-save
 function addPattern(pattern, type, groupBy) {
     if (!validatePattern(pattern, type)) {
-        showStatus('Invalid pattern format', 'error');
+        showToast('Invalid pattern format', 'error');
         return;
     }
 
@@ -272,7 +272,7 @@ function addPattern(pattern, type, groupBy) {
     );
 
     if (exists) {
-        showStatus('This pattern already exists', 'error');
+        showToast('This pattern already exists', 'error');
         return;
     }
 
@@ -292,13 +292,13 @@ function addPattern(pattern, type, groupBy) {
                 // Clear form
                 document.getElementById('pattern-input').value = '';
 
-                showStatus('Pattern added successfully');
+                showToast('Pattern added and saved');
             }
         }
     );
 }
 
-// Remove pattern
+// Remove pattern with auto-save
 function removePattern(index) {
     chrome.runtime.sendMessage(
         { action: 'removePattern', index: index },
@@ -306,7 +306,7 @@ function removePattern(index) {
             if (response.success) {
                 patterns = response.patterns;
                 displayPatterns();
-                showStatus('Pattern removed');
+                showToast('Pattern removed and saved');
             }
         }
     );
@@ -413,12 +413,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadSettings();
 
-    // Mode change
-    document.querySelectorAll('input[name="mode"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            updatePatternsVisibility(e.target.value);
+    // Toggle switch for mode change with auto-save
+    const modeToggle = document.getElementById('mode-toggle');
+    if (modeToggle) {
+        modeToggle.addEventListener('change', (e) => {
+            const mode = e.target.checked ? 'specific' : 'all';
+            updateToggleLabels(mode);
+            updatePatternsVisibility(mode);
+            autoSaveMode(mode);
         });
-    });
+    }
 
     // Pattern type change
     const patternType = document.getElementById('pattern-type');
@@ -482,20 +486,6 @@ document.addEventListener('DOMContentLoaded', () => {
             addPattern(pattern, type, groupBy);
         });
     });
-
-    // Save settings button
-    const saveBtn = document.getElementById('save-settings');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            const modeInput = document.querySelector('input[name="mode"]:checked');
-            if (modeInput) {
-                const mode = modeInput.value;
-                chrome.storage.sync.set({ mode }, () => {
-                    showStatus('Settings saved!');
-                });
-            }
-        });
-    }
 
     // Export settings button
     const exportBtn = document.getElementById('export-settings');
