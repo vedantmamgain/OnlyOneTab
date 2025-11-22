@@ -134,12 +134,18 @@
                         <p class="card-description">Popular configurations for common services</p>
                     </div>
                     <div class="card-content">
-                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="templates-grid">
                             <!-- WhatsApp -->
-                            <div class="template-card">
-                                <div class="template-icon">💬</div>
-                                <h4 class="font-medium">WhatsApp Web</h4>
-                                <p class="text-sm text-muted-foreground mb-3">Keep only one WhatsApp tab open</p>
+                            <div class="template-card-modern">
+                                <div class="template-icon-wrapper whatsapp">
+                                    <svg class="template-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2m.01 1.67c2.2 0 4.26.86 5.82 2.42a8.225 8.225 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.39-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.188 8.188 0 0 1-1.26-4.38c0-4.54 3.7-8.23 8.25-8.23M8.53 7.33c-.16 0-.43.06-.66.31-.22.25-.87.86-.87 2.07 0 1.22.89 2.39 1 2.56.12.17 1.76 2.67 4.25 3.73.59.27 1.05.42 1.41.53.59.19 1.13.16 1.56.1.48-.07 1.46-.6 1.67-1.18.21-.58.21-1.07.15-1.18-.07-.1-.23-.16-.48-.27-.25-.14-1.47-.74-1.69-.82-.23-.08-.37-.12-.56.12-.16.25-.64.81-.78.97-.15.17-.29.19-.53.07-.26-.13-1.06-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.12-.24-.01-.39.11-.51.11-.11.27-.29.37-.44.13-.14.17-.25.25-.41.08-.17.04-.31-.02-.43-.06-.11-.56-1.35-.77-1.84-.2-.48-.4-.42-.56-.43-.14 0-.3-.01-.47-.01Z"/>
+                                    </svg>
+                                </div>
+                                <div class="template-content">
+                                    <h4 class="template-title">WhatsApp Web</h4>
+                                    <p class="template-desc">Keep only one WhatsApp tab open</p>
+                                </div>
                                 <button class="btn btn-outline btn-sm w-full template-btn"
                                         data-pattern="web.whatsapp.com"
                                         data-type="exact"
@@ -149,10 +155,19 @@
                             </div>
 
                             <!-- Google Workspace -->
-                            <div class="template-card">
-                                <div class="template-icon">📧</div>
-                                <h4 class="font-medium">Google Workspace</h4>
-                                <p class="text-sm text-muted-foreground mb-3">Separate tabs for each service</p>
+                            <div class="template-card-modern">
+                                <div class="template-icon-wrapper google">
+                                    <svg class="template-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                    </svg>
+                                </div>
+                                <div class="template-content">
+                                    <h4 class="template-title">Google Workspace</h4>
+                                    <p class="template-desc">Separate tabs for each service</p>
+                                </div>
                                 <button class="btn btn-outline btn-sm w-full template-btn"
                                         data-pattern="*.google.com"
                                         data-type="wildcard"
@@ -162,10 +177,16 @@
                             </div>
 
                             <!-- GitHub -->
-                            <div class="template-card">
-                                <div class="template-icon">🐙</div>
-                                <h4 class="font-medium">GitHub</h4>
-                                <p class="text-sm text-muted-foreground mb-3">All GitHub pages as one tab</p>
+                            <div class="template-card-modern">
+                                <div class="template-icon-wrapper github">
+                                    <svg class="template-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2Z"/>
+                                    </svg>
+                                </div>
+                                <div class="template-content">
+                                    <h4 class="template-title">GitHub</h4>
+                                    <p class="template-desc">All GitHub pages as one tab</p>
+                                </div>
                                 <button class="btn btn-outline btn-sm w-full template-btn"
                                         data-pattern="github.com"
                                         data-type="base"
@@ -175,10 +196,16 @@
                             </div>
 
                             <!-- Slack -->
-                            <div class="template-card">
-                                <div class="template-icon">💼</div>
-                                <h4 class="font-medium">Slack Workspaces</h4>
-                                <p class="text-sm text-muted-foreground mb-3">Each workspace gets one tab</p>
+                            <div class="template-card-modern">
+                                <div class="template-icon-wrapper slack">
+                                    <svg class="template-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zm10.122 2.521a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zm-1.268 0a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zm-2.523 10.122a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zm0-1.268a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+                                    </svg>
+                                </div>
+                                <div class="template-content">
+                                    <h4 class="template-title">Slack Workspaces</h4>
+                                    <p class="template-desc">Each workspace gets one tab</p>
+                                </div>
                                 <button class="btn btn-outline btn-sm w-full template-btn"
                                         data-pattern="*.slack.com"
                                         data-type="wildcard"
@@ -188,10 +215,16 @@
                             </div>
 
                             <!-- Teams -->
-                            <div class="template-card">
-                                <div class="template-icon">👥</div>
-                                <h4 class="font-medium">Microsoft Teams</h4>
-                                <p class="text-sm text-muted-foreground mb-3">Keep only one Teams tab</p>
+                            <div class="template-card-modern">
+                                <div class="template-icon-wrapper teams">
+                                    <svg class="template-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19.19 8.77a4.83 4.83 0 0 0 1.06-5.09A4.81 4.81 0 0 0 15.83.61a4.83 4.83 0 0 0-4.11 2.3 5.24 5.24 0 0 0-4.93 6.31H4.63a2.41 2.41 0 0 0 0 4.83h7.68a2.43 2.43 0 0 0 2.4-2.45V9.18c.37-.09.73-.25 1.05-.47l3.43 2v4.84a2.41 2.41 0 1 0 1.62 0V9.72l-1.62-.95M8.84 2.62a2.4 2.4 0 0 1 4 1.79H10.1a5.23 5.23 0 0 0-1.26-1.79M4.63 11.62a.41.41 0 0 1 0-.82h4.76v.82H4.63m5.77.41v-.82h1.91a.42.42 0 0 1 .4.42.4.4 0 0 1-.4.4h-1.91m7-8.6a2.42 2.42 0 1 1 0 3.41 2.4 2.4 0 0 1 0-3.41m2 16.17a.42.42 0 0 1-.42-.42.4.4 0 0 1 .4-.4.41.41 0 0 1 0 .82Z"/>
+                                    </svg>
+                                </div>
+                                <div class="template-content">
+                                    <h4 class="template-title">Microsoft Teams</h4>
+                                    <p class="template-desc">Keep only one Teams tab</p>
+                                </div>
                                 <button class="btn btn-outline btn-sm w-full template-btn"
                                         data-pattern="teams.microsoft.com"
                                         data-type="exact"
@@ -201,10 +234,16 @@
                             </div>
 
                             <!-- Notion -->
-                            <div class="template-card">
-                                <div class="template-icon">📝</div>
-                                <h4 class="font-medium">Notion</h4>
-                                <p class="text-sm text-muted-foreground mb-3">All Notion pages as one tab</p>
+                            <div class="template-card-modern">
+                                <div class="template-icon-wrapper notion">
+                                    <svg class="template-svg-icon" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/>
+                                    </svg>
+                                </div>
+                                <div class="template-content">
+                                    <h4 class="template-title">Notion</h4>
+                                    <p class="template-desc">All Notion pages as one tab</p>
+                                </div>
                                 <button class="btn btn-outline btn-sm w-full template-btn"
                                         data-pattern="notion.so"
                                         data-type="base"

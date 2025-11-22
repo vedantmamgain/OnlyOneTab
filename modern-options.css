@@ -443,7 +443,113 @@ body {
     }
 }
 
-/* Template Card */
+/* Templates Grid */
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .templates-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .templates-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Template Card Modern */
+.template-card-modern {
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    background-color: hsl(var(--card));
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.template-card-modern:hover {
+    box-shadow: 0 8px 16px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+    border-color: hsl(var(--primary) / 0.3);
+}
+
+/* Template Icon Wrapper */
+.template-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+
+.template-svg-icon {
+    width: 28px;
+    height: 28px;
+    color: white;
+}
+
+/* Brand Colors for Icons */
+.template-icon-wrapper.whatsapp {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+}
+
+.template-icon-wrapper.google {
+    background: linear-gradient(135deg, #4285f4, #34a853);
+}
+
+.template-icon-wrapper.github {
+    background: linear-gradient(135deg, #24292e, #040d21);
+}
+
+.template-icon-wrapper.slack {
+    background: linear-gradient(135deg, #4a154b, #e01e5a);
+}
+
+.template-icon-wrapper.teams {
+    background: linear-gradient(135deg, #5059c9, #7b83eb);
+}
+
+.template-icon-wrapper.notion {
+    background: linear-gradient(135deg, #000000, #333333);
+}
+
+/* Template Content */
+.template-content {
+    flex: 1;
+    margin-bottom: 1rem;
+}
+
+.template-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+    color: hsl(var(--foreground));
+}
+
+.template-desc {
+    font-size: 0.875rem;
+    color: hsl(var(--muted-foreground));
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Hover effects for icon */
+.template-card-modern:hover .template-icon-wrapper {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Old template card styles for backward compatibility */
 .template-card {
     padding: 1.25rem;
     border: 1px solid hsl(var(--border));
