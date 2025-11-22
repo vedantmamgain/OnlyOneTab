@@ -107,6 +107,8 @@ OnlyOneTab/
   * Settings are stored locally using the Chrome Storage API.
   * We only access tab data to perform the de-duplication action.
 
+For complete details, see our [Privacy Policy](PRIVACY.md).
+
 ## 📄 License
 
 MIT License. Feel free to fork, modify, and distribute.
