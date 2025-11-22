@@ -5,7 +5,7 @@ let patterns = [];
 function loadSettings() {
     chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
         // Set mode
-        const mode = data.mode || 'all';
+        const mode = data.mode || 'specific';
         document.getElementById(`mode-${mode}`).checked = true;
 
         // Load patterns
