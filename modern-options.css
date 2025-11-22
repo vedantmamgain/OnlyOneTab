@@ -46,6 +46,28 @@
     --input: 240 3.7% 15.9%;
 }
 
+/* Explicit light theme class */
+.light {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+}
+
 /* Dark theme support for system preference - fallback */
 @media (prefers-color-scheme: dark) {
     :root:not(.dark):not(.light) {
@@ -739,19 +761,27 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    z-index: 10;
 }
 
 .theme-toggle .theme-icon {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: 20px;
     height: 20px;
+    position: absolute;
 }
 
 /* Initial state - hide both icons, JS will show the correct one */
 .theme-toggle .sun-icon,
 .theme-toggle .moon-icon {
     display: none;
-    position: absolute;
+}
+
+/* Ensure icons are visible when displayed */
+.theme-toggle .sun-icon[style*="display: block"],
+.theme-toggle .moon-icon[style*="display: block"] {
+    display: block !important;
 }
 
 /* Animation on theme toggle */
@@ -761,6 +791,11 @@ body {
 
 .theme-toggle:active .theme-icon {
     transform: rotate(20deg) scale(0.95);
+}
+
+/* Debug: make theme toggle button more visible */
+.theme-toggle:hover {
+    background: hsl(var(--accent));
 }
 
 /* Smooth transitions for theme-dependent elements */

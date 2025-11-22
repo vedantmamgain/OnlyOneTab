@@ -2,39 +2,40 @@
 let patterns = [];
 
 // Theme management
-function getSystemTheme() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+const THEME_KEY = 'onlyonetab-theme';
+
+function getCurrentTheme() {
+    return localStorage.getItem(THEME_KEY) || 'light';
 }
 
-function getStoredTheme() {
-    return new Promise((resolve) => {
-        chrome.storage.sync.get(['theme'], (data) => {
-            resolve(data.theme || 'system');
+function saveTheme(theme) {
+    localStorage.setItem(THEME_KEY, theme);
+    // Also save to Chrome storage if available
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+        chrome.storage.sync.set({ theme: theme }, () => {
+            if (chrome.runtime.lastError) {
+                console.warn('Could not save to Chrome storage:', chrome.runtime.lastError);
+            }
         });
-    });
-}
-
-function resolveTheme(themePreference) {
-    if (themePreference === 'system') {
-        return getSystemTheme();
     }
-    return themePreference;
 }
 
 function applyTheme(theme) {
-    const resolvedTheme = resolveTheme(theme);
+    console.log('Applying theme:', theme);
+    const root = document.documentElement;
 
-    if (resolvedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
+    if (theme === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
     } else {
-        document.documentElement.classList.remove('dark');
+        root.classList.remove('dark');
+        root.classList.add('light');
     }
 
-    // Update button icon state
-    updateThemeIcon(resolvedTheme);
+    updateThemeIcon(theme);
 }
 
-function updateThemeIcon(resolvedTheme) {
+function updateThemeIcon(theme) {
     const sunIcon = document.querySelector('.sun-icon');
     const moonIcon = document.querySelector('.moon-icon');
 
@@ -43,43 +44,71 @@ function updateThemeIcon(resolvedTheme) {
         return;
     }
 
-    if (resolvedTheme === 'dark') {
-        sunIcon.style.display = 'block';  // Show sun in dark mode (to switch to light)
+    // Clear any inline styles first
+    sunIcon.style.display = '';
+    moonIcon.style.display = '';
+
+    if (theme === 'dark') {
+        // In dark mode, show sun (to switch to light)
+        sunIcon.style.display = 'block';
         moonIcon.style.display = 'none';
     } else {
+        // In light mode, show moon (to switch to dark)
         sunIcon.style.display = 'none';
-        moonIcon.style.display = 'block';  // Show moon in light mode (to switch to dark)
+        moonIcon.style.display = 'block';
     }
+
+    console.log(`Icons updated - Sun: ${sunIcon.style.display}, Moon: ${moonIcon.style.display}`);
 }
 
-async function toggleTheme() {
-    const currentTheme = await getStoredTheme();
-    let newTheme;
+function toggleTheme() {
+    const currentTheme = getCurrentTheme();
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-    // Simple toggle between light and dark
-    const resolvedCurrentTheme = resolveTheme(currentTheme);
-    newTheme = resolvedCurrentTheme === 'dark' ? 'light' : 'dark';
+    console.log(`Toggling theme: ${currentTheme} -> ${newTheme}`);
 
-    console.log('Theme toggle:', resolvedCurrentTheme, '->', newTheme);
+    saveTheme(newTheme);
+    applyTheme(newTheme);
 
-    chrome.storage.sync.set({ theme: newTheme }, () => {
-        applyTheme(newTheme);
-        console.log('Theme applied:', newTheme);
-    });
+    return newTheme;
 }
 
-async function initializeTheme() {
-    const storedTheme = await getStoredTheme();
-    console.log('Initial theme:', storedTheme);
-    applyTheme(storedTheme);
+function initializeTheme() {
+    console.log('Initializing theme system...');
 
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {
-        const currentTheme = await getStoredTheme();
-        if (currentTheme === 'system') {
-            applyTheme('system');
-        }
-    });
+    // Apply saved theme
+    const savedTheme = getCurrentTheme();
+    console.log('Saved theme:', savedTheme);
+    applyTheme(savedTheme);
+
+    // Find and setup the toggle button
+    const themeToggle = document.getElementById('theme-toggle');
+
+    if (themeToggle) {
+        console.log('Found theme toggle button');
+
+        // Remove all existing listeners by cloning
+        const newButton = themeToggle.cloneNode(true);
+        themeToggle.parentNode.replaceChild(newButton, themeToggle);
+
+        // Add our click handler
+        newButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Theme button clicked');
+            const newTheme = toggleTheme();
+            console.log('Theme changed to:', newTheme);
+        });
+
+        // Make sure button is visible and clickable
+        newButton.style.opacity = '1';
+        newButton.style.pointerEvents = 'auto';
+        newButton.style.cursor = 'pointer';
+
+        console.log('Theme toggle initialized successfully');
+    } else {
+        console.error('Theme toggle button not found!');
+    }
 }
 
 // Load settings on page load
@@ -356,15 +385,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeTheme();
 
     loadSettings();
-
-    // Theme toggle button
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', toggleTheme);
-        console.log('Theme toggle button initialized');
-    } else {
-        console.error('Theme toggle button not found!');
-    }
 
     // Mode change
     document.querySelectorAll('input[name="mode"]').forEach(radio => {
