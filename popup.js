@@ -27,20 +27,30 @@ async function loadPopupData() {
             const matchedPattern = await getMatchedPattern(currentTab.url, patterns);
 
             const toggleButton = document.getElementById('toggle-current-domain');
+            const domainStatus = document.getElementById('domain-status');
+
             if (mode === 'all') {
                 toggleButton.style.display = 'none';
                 document.getElementById('current-mode').textContent = 'Track All Domains';
+                domainStatus.textContent = 'Tracked';
+                domainStatus.classList.add('tracked');
             } else {
                 document.getElementById('current-mode').textContent = 'Custom Patterns';
 
                 if (matchedPattern) {
-                    toggleButton.textContent = `Matched: ${matchedPattern.pattern}`;
-                    toggleButton.className = 'toggle-button active';
+                    toggleButton.querySelector('.toggle-text').textContent = `Matched: ${matchedPattern.pattern}`;
+                    toggleButton.classList.add('btn-primary');
+                    toggleButton.classList.remove('btn-outline');
                     toggleButton.disabled = true;
+                    domainStatus.textContent = 'Tracked';
+                    domainStatus.classList.add('tracked');
                 } else {
-                    toggleButton.textContent = 'Not Tracked';
-                    toggleButton.className = 'toggle-button';
-                    toggleButton.disabled = true;
+                    toggleButton.querySelector('.toggle-text').textContent = 'Add Pattern';
+                    toggleButton.classList.remove('btn-primary');
+                    toggleButton.classList.add('btn-outline');
+                    toggleButton.disabled = false;
+                    domainStatus.textContent = 'Not Tracked';
+                    domainStatus.classList.remove('tracked');
                 }
             }
         });
@@ -99,13 +109,17 @@ function displayGroups(groupCount, allTabs) {
         .filter(([group, count]) => count > 1);
 
     if (duplicateGroups.length === 0) {
-        duplicatesList.innerHTML = '<p class="empty-message">No duplicate tab groups detected</p>';
+        duplicatesList.innerHTML = `
+            <div class="empty-state">
+                <p class="text-muted-foreground text-sm italic">No duplicate tab groups detected</p>
+            </div>
+        `;
         return;
     }
 
     duplicateGroups.forEach(([group, count]) => {
         const groupDiv = document.createElement('div');
-        groupDiv.className = 'duplicate-item';
+        groupDiv.className = 'duplicate-group';
 
         // Find actual tabs in this group for more info
         const groupTabs = allTabs.filter(tab => {
@@ -114,12 +128,23 @@ function displayGroups(groupCount, allTabs) {
             return domain && (domain === group || domain.includes(group) || group.includes(domain));
         });
 
+        // Get tab titles for display
+        const tabTitles = groupTabs.slice(0, 3).map(tab =>
+            `<div class="tab-item" title="${tab.title}">${tab.title}</div>`
+        ).join('');
+
+        const moreText = groupTabs.length > 3 ? `<div class="tab-item">... and ${groupTabs.length - 3} more</div>` : '';
+
         groupDiv.innerHTML = `
-            <div class="duplicate-header">
-                <span class="domain-name">${group}</span>
-                <span class="duplicate-count">${count} tabs</span>
+            <div class="duplicate-domain">
+                <span>${group}</span>
+                <span class="duplicate-count">${count}</span>
             </div>
-            <button class="close-group-duplicates" data-group="${group}">
+            <div class="duplicate-tabs">
+                ${tabTitles}
+                ${moreText}
+            </div>
+            <button class="btn btn-sm btn-outline mt-3 w-full close-group-duplicates" data-group="${group}">
                 Close ${count - 1} duplicate${count > 2 ? 's' : ''}
             </button>
         `;
@@ -222,8 +247,19 @@ async function mergeAllWindows() {
     }
 }
 
+// Initialize theme
+function initTheme() {
+    const savedTheme = localStorage.getItem('onlyonetab-theme') || 'light';
+    if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.add('light');
+    }
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     loadPopupData();
 
     // Settings button
