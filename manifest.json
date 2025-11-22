@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "OnlyOneTab",
+  "version": "1.0.0",
+  "description": "Ensures only one tab per domain remains open. Automatically switches to existing tab when trying to open duplicate.",
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  },
+  "options_page": "options.html",
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  }
+}

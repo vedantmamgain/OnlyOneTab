@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnlyOneTab Settings</title>
+    <link rel="stylesheet" href="modern-options.css">
+</head>
+<body>
+    <div class="min-h-screen bg-background">
+        <!-- Header -->
+        <header class="border-b">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="logo-badge">1</div>
+                        <div>
+                            <h1 class="text-2xl font-semibold">OnlyOneTab</h1>
+                            <p class="text-sm text-muted-foreground">Smart tab management for focused browsing</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="export-settings" class="btn btn-outline btn-icon">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            <span>Export</span>
+                        </button>
+                        <button id="import-settings" class="btn btn-outline btn-icon">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                            </svg>
+                            <span>Import</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-6 py-8">
+            <div class="max-w-4xl mx-auto space-y-6">
+
+                <!-- Tracking Mode Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Tracking Mode</h2>
+                        <p class="card-description">Choose how OnlyOneTab manages your tabs</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="space-y-3">
+                            <label class="radio-card">
+                                <input type="radio" name="mode" value="all" id="mode-all" class="radio-input">
+                                <div class="radio-card-content">
+                                    <div class="radio-indicator"></div>
+                                    <div class="flex-1">
+                                        <div class="font-medium">Track All Domains</div>
+                                        <div class="text-sm text-muted-foreground">Automatically manage tabs for all websites (each subdomain tracked separately)</div>
+                                    </div>
+                                </div>
+                            </label>
+                            <label class="radio-card">
+                                <input type="radio" name="mode" value="specific" id="mode-specific" class="radio-input">
+                                <div class="radio-card-content">
+                                    <div class="radio-indicator"></div>
+                                    <div class="flex-1">
+                                        <div class="font-medium">Use Custom Patterns</div>
+                                        <div class="text-sm text-muted-foreground">Define specific patterns for domains you want to track</div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Domain Patterns Card -->
+                <div class="card" id="patterns-section">
+                    <div class="card-header">
+                        <h2 class="card-title">Domain Patterns</h2>
+                        <p class="card-description">Configure how specific domains are tracked</p>
+                    </div>
+                    <div class="card-content space-y-6">
+                        <!-- Add Pattern Form -->
+                        <div class="border rounded-lg p-4 bg-muted">
+                            <h3 class="font-medium mb-4 text-sm uppercase tracking-wider opacity-70">Add New Pattern</h3>
+                            <div class="grid gap-4">
+                                <div class="grid sm:grid-cols-2 gap-4">
+                                    <div class="space-y-2">
+                                        <label class="text-sm font-medium">Pattern Type</label>
+                                        <select id="pattern-type" class="select">
+                                            <option value="exact">Exact Domain</option>
+                                            <option value="wildcard">Wildcard Subdomain</option>
+                                            <option value="base">Base Domain (all subdomains)</option>
+                                        </select>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <label class="text-sm font-medium">Group By</label>
+                                        <select id="group-by" class="select">
+                                            <option value="subdomain">Each subdomain separately</option>
+                                            <option value="base">All matching URLs as one</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <label class="text-sm font-medium">Pattern</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="pattern-input" class="input flex-1" placeholder="e.g., web.whatsapp.com">
+                                        <button id="add-pattern" class="btn btn-primary">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                            <span>Add Pattern</span>
+                                        </button>
+                                    </div>
+                                    <p id="pattern-hint" class="text-xs text-muted-foreground">Enter exact domain like: web.whatsapp.com</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Active Patterns List -->
+                        <div>
+                            <h3 class="font-medium mb-3 text-sm uppercase tracking-wider opacity-70">Active Patterns</h3>
+                            <div id="patterns-container" class="space-y-2">
+                                <!-- Patterns will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Templates -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Quick Templates</h2>
+                        <p class="card-description">Popular configurations for common services</p>
+                    </div>
+                    <div class="card-content">
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- WhatsApp -->
+                            <div class="template-card">
+                                <div class="template-icon">💬</div>
+                                <h4 class="font-medium">WhatsApp Web</h4>
+                                <p class="text-sm text-muted-foreground mb-3">Keep only one WhatsApp tab open</p>
+                                <button class="btn btn-outline btn-sm w-full template-btn"
+                                        data-pattern="web.whatsapp.com"
+                                        data-type="exact"
+                                        data-group="subdomain">
+                                    Add Pattern
+                                </button>
+                            </div>
+
+                            <!-- Google Workspace -->
+                            <div class="template-card">
+                                <div class="template-icon">📧</div>
+                                <h4 class="font-medium">Google Workspace</h4>
+                                <p class="text-sm text-muted-foreground mb-3">Separate tabs for each service</p>
+                                <button class="btn btn-outline btn-sm w-full template-btn"
+                                        data-pattern="*.google.com"
+                                        data-type="wildcard"
+                                        data-group="subdomain">
+                                    Add Pattern
+                                </button>
+                            </div>
+
+                            <!-- GitHub -->
+                            <div class="template-card">
+                                <div class="template-icon">🐙</div>
+                                <h4 class="font-medium">GitHub</h4>
+                                <p class="text-sm text-muted-foreground mb-3">All GitHub pages as one tab</p>
+                                <button class="btn btn-outline btn-sm w-full template-btn"
+                                        data-pattern="github.com"
+                                        data-type="base"
+                                        data-group="base">
+                                    Add Pattern
+                                </button>
+                            </div>
+
+                            <!-- Slack -->
+                            <div class="template-card">
+                                <div class="template-icon">💼</div>
+                                <h4 class="font-medium">Slack Workspaces</h4>
+                                <p class="text-sm text-muted-foreground mb-3">Each workspace gets one tab</p>
+                                <button class="btn btn-outline btn-sm w-full template-btn"
+                                        data-pattern="*.slack.com"
+                                        data-type="wildcard"
+                                        data-group="subdomain">
+                                    Add Pattern
+                                </button>
+                            </div>
+
+                            <!-- Teams -->
+                            <div class="template-card">
+                                <div class="template-icon">👥</div>
+                                <h4 class="font-medium">Microsoft Teams</h4>
+                                <p class="text-sm text-muted-foreground mb-3">Keep only one Teams tab</p>
+                                <button class="btn btn-outline btn-sm w-full template-btn"
+                                        data-pattern="teams.microsoft.com"
+                                        data-type="exact"
+                                        data-group="subdomain">
+                                    Add Pattern
+                                </button>
+                            </div>
+
+                            <!-- Notion -->
+                            <div class="template-card">
+                                <div class="template-icon">📝</div>
+                                <h4 class="font-medium">Notion</h4>
+                                <p class="text-sm text-muted-foreground mb-3">All Notion pages as one tab</p>
+                                <button class="btn btn-outline btn-sm w-full template-btn"
+                                        data-pattern="notion.so"
+                                        data-type="base"
+                                        data-group="base">
+                                    Add Pattern
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="flex justify-center pt-4">
+                    <button id="save-settings" class="btn btn-primary btn-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Save Settings</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50"></div>
+
+    <script src="options.js"></script>
+</body>
+</html>

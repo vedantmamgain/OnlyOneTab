@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnlyOneTab</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            width: 350px;
+            min-height: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="popup-container">
+        <div class="header">
+            <h1>OnlyOneTab</h1>
+            <button id="settings-btn" class="icon-button" title="Settings">⚙️</button>
+        </div>
+
+        <div class="status-section">
+            <h2>Status</h2>
+            <div class="status-info">
+                <div class="status-item">
+                    <span class="label">Mode:</span>
+                    <span id="current-mode" class="value">Loading...</span>
+                </div>
+                <div class="status-item">
+                    <span class="label">Active Tabs:</span>
+                    <span id="tab-count" class="value">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Current Domain</h2>
+            <div id="current-domain-info">
+                <p id="current-domain">Loading...</p>
+                <button id="toggle-current-domain" class="toggle-button">Loading...</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Duplicate Tabs</h2>
+            <div id="duplicate-tabs-list" class="duplicate-list">
+                <p class="empty-message">No duplicate tabs detected</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Quick Actions</h2>
+            <div class="action-buttons">
+                <button id="close-duplicates" class="action-button">Close All Duplicates</button>
+                <button id="merge-windows" class="action-button">Merge All Windows</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <small>Keeping your tabs organized, one domain at a time</small>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
