@@ -56,26 +56,20 @@
                         <p class="card-description">Choose how OnlyOneTab manages your tabs</p>
                     </div>
                     <div class="card-content">
-                        <div class="space-y-3">
-                            <label class="radio-card">
-                                <input type="radio" name="mode" value="all" id="mode-all" class="radio-input">
-                                <div class="radio-card-content">
-                                    <div class="radio-indicator"></div>
-                                    <div class="flex-1">
-                                        <div class="font-medium">Track All Domains</div>
-                                        <div class="text-sm text-muted-foreground">Automatically manage tabs for all websites (each subdomain tracked separately)</div>
-                                    </div>
+                        <div class="toggle-mode-container">
+                            <div class="toggle-mode-labels">
+                                <div class="toggle-label-left" id="label-all">
+                                    <div class="toggle-label-title">Track All Domains</div>
+                                    <div class="toggle-label-desc">Automatically manage tabs for all websites</div>
                                 </div>
-                            </label>
-                            <label class="radio-card">
-                                <input type="radio" name="mode" value="specific" id="mode-specific" class="radio-input">
-                                <div class="radio-card-content">
-                                    <div class="radio-indicator"></div>
-                                    <div class="flex-1">
-                                        <div class="font-medium">Use Custom Patterns</div>
-                                        <div class="text-sm text-muted-foreground">Define specific patterns for domains you want to track</div>
-                                    </div>
+                                <div class="toggle-label-right" id="label-specific">
+                                    <div class="toggle-label-title">Use Custom Patterns</div>
+                                    <div class="toggle-label-desc">Define specific patterns for domains you want to track</div>
                                 </div>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="mode-toggle" class="toggle-input">
+                                <span class="toggle-slider"></span>
                             </label>
                         </div>
                     </div>
@@ -128,7 +122,7 @@
                         <!-- Active Patterns List -->
                         <div>
                             <h3 class="font-medium mb-3 text-sm uppercase tracking-wider opacity-70">Active Patterns</h3>
-                            <div id="patterns-container" class="space-y-2">
+                            <div id="patterns-container" class="space-y-2 patterns-scrollable">
                                 <!-- Patterns will be loaded here -->
                             </div>
                         </div>
@@ -248,15 +242,6 @@
                     </div>
                 </div>
 
-                <!-- Save Button -->
-                <div class="flex justify-center pt-4">
-                    <button id="save-settings" class="btn btn-primary btn-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        <span>Save Settings</span>
-                    </button>
-                </div>
             </div>
         </main>
     </div>

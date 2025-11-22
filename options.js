@@ -111,12 +111,23 @@ function initializeTheme() {
     }
 }
 
+// Auto-save mode setting
+function autoSaveMode(mode) {
+    chrome.storage.sync.set({ mode }, () => {
+        showToast('Settings saved automatically');
+    });
+}
+
 // Load settings on page load
 function loadSettings() {
     chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
-        // Set mode
+        // Set mode - use toggle instead of radio buttons
         const mode = data.mode || 'specific';
-        document.getElementById(`mode-${mode}`).checked = true;
+        const toggleInput = document.getElementById('mode-toggle');
+        if (toggleInput) {
+            toggleInput.checked = (mode === 'specific');
+            updateToggleLabels(mode);
+        }
 
         // Load patterns
         patterns = data.domainPatterns || [];
@@ -125,6 +136,22 @@ function loadSettings() {
         // Show/hide patterns section based on mode
         updatePatternsVisibility(mode);
     });
+}
+
+// Update toggle label states
+function updateToggleLabels(mode) {
+    const labelAll = document.getElementById('label-all');
+    const labelSpecific = document.getElementById('label-specific');
+
+    if (labelAll && labelSpecific) {
+        if (mode === 'all') {
+            labelAll.classList.add('active');
+            labelSpecific.classList.remove('active');
+        } else {
+            labelAll.classList.remove('active');
+            labelSpecific.classList.add('active');
+        }
+    }
 }
 
 // Display patterns
