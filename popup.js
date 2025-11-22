@@ -20,8 +20,14 @@ async function loadPopupData() {
 
         // Get tracking mode and patterns
         chrome.storage.sync.get(['mode', 'domainPatterns'], async (data) => {
-            const mode = data.mode || 'specific';
+            let mode = data.mode || 'all';
             const patterns = data.domainPatterns || [];
+
+            // Smart fallback: If specific mode but no patterns, switch to all
+            if (mode === 'specific' && patterns.length === 0) {
+                mode = 'all';
+                chrome.storage.sync.set({ mode: 'all' }); // Persist the fix
+            }
 
             // Check if current tab matches any pattern
             const matchedPattern = await getMatchedPattern(currentTab.url, patterns);
@@ -158,7 +164,7 @@ async function closeDuplicatesForGroup(group) {
 
     // Get tracking info from storage
     const data = await chrome.storage.sync.get(['mode', 'domainPatterns']);
-    const mode = data.mode || 'specific';
+    const mode = data.mode || 'all';
 
     const groupTabs = [];
 
@@ -267,10 +273,48 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.runtime.openOptionsPage();
     });
 
-    // Note: Toggle button is now informational only in pattern mode
-    document.getElementById('toggle-current-domain').addEventListener('click', () => {
-        // Open settings page if user wants to modify patterns
-        chrome.runtime.openOptionsPage();
+    // Add pattern button logic
+    document.getElementById('toggle-current-domain').addEventListener('click', async () => {
+        const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const currentDomain = getDomainFromUrl(currentTab.url);
+
+        if (currentDomain) {
+            // Check if we are in specific mode and need to add pattern
+            chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
+                const mode = data.mode || 'all';
+                const patterns = data.domainPatterns || [];
+
+                // If in specific mode and not tracked, add pattern
+                if (mode === 'specific') {
+                    // Check if already exists to be safe
+                    const exists = patterns.some(p => p.pattern === currentDomain);
+
+                    if (!exists) {
+                        const newPattern = {
+                            pattern: currentDomain,
+                            type: 'base',
+                            groupBy: 'base'
+                        };
+
+                        chrome.runtime.sendMessage(
+                            { action: 'addPattern', pattern: newPattern },
+                            (response) => {
+                                if (response.success) {
+                                    loadPopupData(); // Refresh UI
+                                }
+                            }
+                        );
+                    } else {
+                        // If already exists or other action needed, maybe open options
+                        chrome.runtime.openOptionsPage();
+                    }
+                } else {
+                    // In 'all' mode, maybe open options or toggle specific mode?
+                    // For now, keep original behavior of opening options if not adding pattern
+                    chrome.runtime.openOptionsPage();
+                }
+            });
+        }
     });
 
     // Close duplicates for specific group

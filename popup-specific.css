@@ -315,7 +315,7 @@
 
 /* Gap utilities */
 .gap-2 {
-    gap: 0.25rem;
+    gap: 0.1875rem;
 }
 
 /* Text utilities */
@@ -357,6 +357,8 @@ body {
     margin: 0;
     padding: 0;
     background: hsl(var(--background));
+    min-width: auto;
+    width: 280px;
 }
 
 /* Hover effects */
