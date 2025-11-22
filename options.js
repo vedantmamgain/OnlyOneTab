@@ -92,7 +92,7 @@ function initializeTheme() {
         themeToggle.parentNode.replaceChild(newButton, themeToggle);
 
         // Add our click handler
-        newButton.addEventListener('click', function(e) {
+        newButton.addEventListener('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
             console.log('Theme button clicked');
@@ -122,7 +122,15 @@ function autoSaveMode(mode) {
 function loadSettings() {
     chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
         // Set mode - use toggle instead of radio buttons
-        const mode = data.mode || 'specific';
+        let mode = data.mode || 'specific';
+        const patterns = data.domainPatterns || [];
+
+        // Smart fallback: If specific mode but no patterns, switch to all
+        if (mode === 'specific' && patterns.length === 0) {
+            mode = 'all';
+            chrome.storage.sync.set({ mode: 'all' }); // Persist the fix
+        }
+
         const toggleInput = document.getElementById('mode-toggle');
         if (toggleInput) {
             toggleInput.checked = (mode === 'specific');
@@ -325,9 +333,9 @@ function showToast(message, type = 'success') {
     toast.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             ${type === 'success'
-                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
-                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
-            }
+            ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+            : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>'
+        }
         </svg>
         <span>${message}</span>
     `;

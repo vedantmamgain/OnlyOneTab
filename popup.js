@@ -8,6 +8,13 @@ function getDomainFromUrl(url) {
     }
 }
 
+// Helper function to escape HTML entities
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Load popup data
 async function loadPopupData() {
     // Get current tab
@@ -20,27 +27,54 @@ async function loadPopupData() {
 
         // Get tracking mode and patterns
         chrome.storage.sync.get(['mode', 'domainPatterns'], async (data) => {
-            const mode = data.mode || 'specific';
+            let mode = data.mode || 'specific';
             const patterns = data.domainPatterns || [];
+
+            // Smart fallback: If specific mode but no patterns, switch to all
+            if (mode === 'specific' && patterns.length === 0) {
+                mode = 'all';
+                chrome.storage.sync.set({ mode: 'all' }); // Persist the fix
+            }
 
             // Check if current tab matches any pattern
             const matchedPattern = await getMatchedPattern(currentTab.url, patterns);
 
             const toggleButton = document.getElementById('toggle-current-domain');
+            const domainStatus = document.getElementById('domain-status');
+
+            if (!toggleButton || !domainStatus) {
+                console.error('Required DOM elements not found');
+                return;
+            }
+
             if (mode === 'all') {
                 toggleButton.style.display = 'none';
                 document.getElementById('current-mode').textContent = 'Track All Domains';
+                domainStatus.textContent = 'Tracked';
+                domainStatus.classList.add('tracked');
             } else {
                 document.getElementById('current-mode').textContent = 'Custom Patterns';
 
                 if (matchedPattern) {
-                    toggleButton.textContent = `Matched: ${matchedPattern.pattern}`;
-                    toggleButton.className = 'toggle-button active';
+                    const toggleText = toggleButton.querySelector('.toggle-text');
+                    if (toggleText) {
+                        toggleText.textContent = `Matched: ${matchedPattern.pattern}`;
+                    }
+                    toggleButton.classList.add('btn-primary');
+                    toggleButton.classList.remove('btn-outline');
                     toggleButton.disabled = true;
+                    domainStatus.textContent = 'Tracked';
+                    domainStatus.classList.add('tracked');
                 } else {
-                    toggleButton.textContent = 'Not Tracked';
-                    toggleButton.className = 'toggle-button';
-                    toggleButton.disabled = true;
+                    const toggleText = toggleButton.querySelector('.toggle-text');
+                    if (toggleText) {
+                        toggleText.textContent = 'Add Pattern';
+                    }
+                    toggleButton.classList.remove('btn-primary');
+                    toggleButton.classList.add('btn-outline');
+                    toggleButton.disabled = false;
+                    domainStatus.textContent = 'Not Tracked';
+                    domainStatus.classList.remove('tracked');
                 }
             }
         });
@@ -99,13 +133,17 @@ function displayGroups(groupCount, allTabs) {
         .filter(([group, count]) => count > 1);
 
     if (duplicateGroups.length === 0) {
-        duplicatesList.innerHTML = '<p class="empty-message">No duplicate tab groups detected</p>';
+        duplicatesList.innerHTML = `
+            <div class="empty-state">
+                <p class="text-muted-foreground text-sm italic">No duplicate tab groups detected</p>
+            </div>
+        `;
         return;
     }
 
     duplicateGroups.forEach(([group, count]) => {
         const groupDiv = document.createElement('div');
-        groupDiv.className = 'duplicate-item';
+        groupDiv.className = 'duplicate-group';
 
         // Find actual tabs in this group for more info
         const groupTabs = allTabs.filter(tab => {
@@ -114,12 +152,23 @@ function displayGroups(groupCount, allTabs) {
             return domain && (domain === group || domain.includes(group) || group.includes(domain));
         });
 
+        // Get tab titles for display
+        const tabTitles = groupTabs.slice(0, 3).map(tab =>
+            `<div class="tab-item" title="${escapeHtml(tab.title)}">${escapeHtml(tab.title)}</div>`
+        ).join('');
+
+        const moreText = groupTabs.length > 3 ? `<div class="tab-item">... and ${groupTabs.length - 3} more</div>` : '';
+
         groupDiv.innerHTML = `
-            <div class="duplicate-header">
-                <span class="domain-name">${group}</span>
-                <span class="duplicate-count">${count} tabs</span>
+            <div class="duplicate-domain">
+                <span>${escapeHtml(group)}</span>
+                <span class="duplicate-count">${count}</span>
             </div>
-            <button class="close-group-duplicates" data-group="${group}">
+            <div class="duplicate-tabs">
+                ${tabTitles}
+                ${moreText}
+            </div>
+            <button class="btn btn-sm btn-outline mt-3 w-full close-group-duplicates" data-group="${escapeHtml(group)}">
                 Close ${count - 1} duplicate${count > 2 ? 's' : ''}
             </button>
         `;
@@ -133,7 +182,7 @@ async function closeDuplicatesForGroup(group) {
 
     // Get tracking info from storage
     const data = await chrome.storage.sync.get(['mode', 'domainPatterns']);
-    const mode = data.mode || 'specific';
+    const mode = data.mode || 'all';
 
     const groupTabs = [];
 
@@ -222,8 +271,18 @@ async function mergeAllWindows() {
     }
 }
 
+// Initialize theme
+function initTheme() {
+    const savedTheme = localStorage.getItem('onlyonetab-theme') || 'light';
+    // Remove any existing theme classes first
+    document.documentElement.classList.remove('dark', 'light');
+    // Add the current theme class
+    document.documentElement.classList.add(savedTheme);
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     loadPopupData();
 
     // Settings button
@@ -231,10 +290,52 @@ document.addEventListener('DOMContentLoaded', () => {
         chrome.runtime.openOptionsPage();
     });
 
-    // Note: Toggle button is now informational only in pattern mode
-    document.getElementById('toggle-current-domain').addEventListener('click', () => {
-        // Open settings page if user wants to modify patterns
-        chrome.runtime.openOptionsPage();
+    // Add pattern button logic
+    document.getElementById('toggle-current-domain').addEventListener('click', async () => {
+        const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const currentDomain = getDomainFromUrl(currentTab.url);
+
+        if (currentDomain) {
+            // Check if we are in specific mode and need to add pattern
+            chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
+                const mode = data.mode || 'specific';
+                const patterns = data.domainPatterns || [];
+
+                // If in specific mode and not tracked, add pattern
+                if (mode === 'specific') {
+                    // Check if URL is already covered by any existing pattern
+                    const exists = patterns.some(p => matchesPattern(currentTab.url, p));
+
+                    if (!exists) {
+                        const newPattern = {
+                            pattern: currentDomain,
+                            type: 'base',
+                            groupBy: 'base'
+                        };
+
+                        chrome.runtime.sendMessage(
+                            { action: 'addPattern', pattern: newPattern },
+                            (response) => {
+                                if (chrome.runtime.lastError) {
+                                    console.error('Error adding pattern:', chrome.runtime.lastError);
+                                    return;
+                                }
+                                if (response && response.success) {
+                                    loadPopupData(); // Refresh UI
+                                }
+                            }
+                        );
+                    } else {
+                        // If already exists or other action needed, maybe open options
+                        chrome.runtime.openOptionsPage();
+                    }
+                } else {
+                    // In 'all' mode, maybe open options or toggle specific mode?
+                    // For now, keep original behavior of opening options if not adding pattern
+                    chrome.runtime.openOptionsPage();
+                }
+            });
+        }
     });
 
     // Close duplicates for specific group
