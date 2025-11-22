@@ -636,7 +636,9 @@ label.text-sm.font-medium {
 .template-card-modern {
     display: flex;
     flex-direction: column;
-    padding: 1.25rem;
+    align-items: center;
+    text-align: center;
+    padding: 1.5rem 1.25rem;
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
     background-color: hsl(var(--card));
@@ -652,20 +654,24 @@ label.text-sm.font-medium {
 
 /* Template Icon Wrapper */
 .template-icon-wrapper {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 1rem;
     transition: all 0.2s;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .template-svg-icon {
-    width: 28px;
-    height: 28px;
-    color: white;
+    width: 32px;
+    height: 32px;
+    /* Make SVG icons white on colored backgrounds */
+    filter: brightness(0) invert(1);
+    z-index: 1;
 }
 
 /* Brand Colors for Icons */
@@ -681,6 +687,10 @@ label.text-sm.font-medium {
     background: linear-gradient(135deg, #24292e, #040d21);
 }
 
+.dark .template-icon-wrapper.github {
+    background: linear-gradient(135deg, #6e7681, #24292e);
+}
+
 .template-icon-wrapper.slack {
     background: linear-gradient(135deg, #4a154b, #e01e5a);
 }
@@ -691,6 +701,16 @@ label.text-sm.font-medium {
 
 .template-icon-wrapper.notion {
     background: linear-gradient(135deg, #000000, #333333);
+}
+
+.dark .template-icon-wrapper.notion {
+    background: linear-gradient(135deg, #373737, #000000);
+}
+
+/* Icon hover effects */
+.template-card-modern:hover .template-icon-wrapper {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Template Content */
@@ -708,7 +728,7 @@ label.text-sm.font-medium {
 
 .template-desc {
     font-size: 0.875rem;
-    color: hsl(var(--foreground) / 0.6);
+    color: hsl(var(--foreground) / 0.65);
     margin: 0;
     line-height: 1.4;
 }
