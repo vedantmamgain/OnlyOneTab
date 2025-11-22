@@ -90,7 +90,7 @@ function getTrackingKey(url) {
 async function shouldTrackUrl(url) {
   return new Promise((resolve) => {
     chrome.storage.sync.get(['domainPatterns', 'mode'], (data) => {
-      const mode = data.mode || 'all'; // 'all' or 'specific'
+      const mode = data.mode || 'specific'; // 'all' or 'specific'
       domainPatterns = data.domainPatterns || [];
 
       if (mode === 'all') {

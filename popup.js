@@ -20,7 +20,7 @@ async function loadPopupData() {
 
         // Get tracking mode and patterns
         chrome.storage.sync.get(['mode', 'domainPatterns'], async (data) => {
-            const mode = data.mode || 'all';
+            const mode = data.mode || 'specific';
             const patterns = data.domainPatterns || [];
 
             // Check if current tab matches any pattern
@@ -133,7 +133,7 @@ async function closeDuplicatesForGroup(group) {
 
     // Get tracking info from storage
     const data = await chrome.storage.sync.get(['mode', 'domainPatterns']);
-    const mode = data.mode || 'all';
+    const mode = data.mode || 'specific';
 
     const groupTabs = [];
 
