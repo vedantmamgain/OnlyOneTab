@@ -1,6 +1,87 @@
 // Current patterns
 let patterns = [];
 
+// Theme management
+function getSystemTheme() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function getStoredTheme() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(['theme'], (data) => {
+            resolve(data.theme || 'system');
+        });
+    });
+}
+
+function resolveTheme(themePreference) {
+    if (themePreference === 'system') {
+        return getSystemTheme();
+    }
+    return themePreference;
+}
+
+function applyTheme(theme) {
+    const resolvedTheme = resolveTheme(theme);
+
+    if (resolvedTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+
+    // Update button icon state
+    updateThemeIcon(resolvedTheme);
+}
+
+function updateThemeIcon(resolvedTheme) {
+    const sunIcon = document.querySelector('.sun-icon');
+    const moonIcon = document.querySelector('.moon-icon');
+
+    if (!sunIcon || !moonIcon) {
+        console.warn('Theme icons not found');
+        return;
+    }
+
+    if (resolvedTheme === 'dark') {
+        sunIcon.style.display = 'block';  // Show sun in dark mode (to switch to light)
+        moonIcon.style.display = 'none';
+    } else {
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';  // Show moon in light mode (to switch to dark)
+    }
+}
+
+async function toggleTheme() {
+    const currentTheme = await getStoredTheme();
+    let newTheme;
+
+    // Simple toggle between light and dark
+    const resolvedCurrentTheme = resolveTheme(currentTheme);
+    newTheme = resolvedCurrentTheme === 'dark' ? 'light' : 'dark';
+
+    console.log('Theme toggle:', resolvedCurrentTheme, '->', newTheme);
+
+    chrome.storage.sync.set({ theme: newTheme }, () => {
+        applyTheme(newTheme);
+        console.log('Theme applied:', newTheme);
+    });
+}
+
+async function initializeTheme() {
+    const storedTheme = await getStoredTheme();
+    console.log('Initial theme:', storedTheme);
+    applyTheme(storedTheme);
+
+    // Listen for system theme changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', async (e) => {
+        const currentTheme = await getStoredTheme();
+        if (currentTheme === 'system') {
+            applyTheme('system');
+        }
+    });
+}
+
 // Load settings on page load
 function loadSettings() {
     chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
@@ -91,6 +172,12 @@ function updatePatternHint(type) {
     const hint = document.getElementById('pattern-hint');
     const input = document.getElementById('pattern-input');
 
+    // Add null checks to prevent errors
+    if (!hint || !input) {
+        console.warn('Pattern hint or input elements not found');
+        return;
+    }
+
     if (type === 'exact') {
         hint.textContent = 'Enter exact domain like: web.whatsapp.com';
         input.placeholder = 'e.g., web.whatsapp.com';
@@ -172,6 +259,11 @@ function removePattern(index) {
 // Show toast notification
 function showToast(message, type = 'success') {
     const container = document.getElementById('toast-container');
+    if (!container) {
+        console.warn('Toast container not found, message:', message);
+        return;
+    }
+
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.innerHTML = `
@@ -189,7 +281,9 @@ function showToast(message, type = 'success') {
     setTimeout(() => {
         toast.style.animation = 'slideOut 0.2s ease-in';
         setTimeout(() => {
-            container.removeChild(toast);
+            if (container && toast.parentNode === container) {
+                container.removeChild(toast);
+            }
         }, 200);
     }, 3000);
 }
@@ -258,7 +352,19 @@ function importSettings() {
 
 // Event listeners
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize theme first
+    initializeTheme();
+
     loadSettings();
+
+    // Theme toggle button
+    const themeToggle = document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+        console.log('Theme toggle button initialized');
+    } else {
+        console.error('Theme toggle button not found!');
+    }
 
     // Mode change
     document.querySelectorAll('input[name="mode"]').forEach(radio => {
@@ -268,33 +374,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Pattern type change
-    document.getElementById('pattern-type').addEventListener('change', (e) => {
-        updatePatternHint(e.target.value);
-    });
+    const patternType = document.getElementById('pattern-type');
+    if (patternType) {
+        patternType.addEventListener('change', (e) => {
+            updatePatternHint(e.target.value);
+        });
+    }
 
     // Add pattern button
-    document.getElementById('add-pattern').addEventListener('click', () => {
-        const pattern = document.getElementById('pattern-input').value.trim().toLowerCase();
-        const type = document.getElementById('pattern-type').value;
-        const groupBy = document.getElementById('group-by').value;
+    const addPatternBtn = document.getElementById('add-pattern');
+    if (addPatternBtn) {
+        addPatternBtn.addEventListener('click', () => {
+            const patternInput = document.getElementById('pattern-input');
+            const patternType = document.getElementById('pattern-type');
+            const groupBy = document.getElementById('group-by');
 
-        if (pattern) {
-            addPattern(pattern, type, groupBy);
-        }
-    });
+            if (patternInput && patternType && groupBy) {
+                const pattern = patternInput.value.trim().toLowerCase();
+                const type = patternType.value;
+                const groupByValue = groupBy.value;
+
+                if (pattern) {
+                    addPattern(pattern, type, groupByValue);
+                }
+            }
+        });
+    }
 
     // Enter key on pattern input
-    document.getElementById('pattern-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            const pattern = e.target.value.trim().toLowerCase();
-            const type = document.getElementById('pattern-type').value;
-            const groupBy = document.getElementById('group-by').value;
+    const patternInput = document.getElementById('pattern-input');
+    if (patternInput) {
+        patternInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const pattern = e.target.value.trim().toLowerCase();
+                const patternType = document.getElementById('pattern-type');
+                const groupBy = document.getElementById('group-by');
 
-            if (pattern) {
-                addPattern(pattern, type, groupBy);
+                if (pattern && patternType && groupBy) {
+                    addPattern(pattern, patternType.value, groupBy.value);
+                }
             }
-        }
-    });
+        });
+    }
 
     // Remove pattern buttons
     document.addEventListener('click', (e) => {
@@ -316,16 +437,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Save settings button
-    document.getElementById('save-settings').addEventListener('click', () => {
-        const mode = document.querySelector('input[name="mode"]:checked').value;
-        chrome.storage.sync.set({ mode }, () => {
-            showStatus('Settings saved!');
+    const saveBtn = document.getElementById('save-settings');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const modeInput = document.querySelector('input[name="mode"]:checked');
+            if (modeInput) {
+                const mode = modeInput.value;
+                chrome.storage.sync.set({ mode }, () => {
+                    showStatus('Settings saved!');
+                });
+            }
         });
-    });
+    }
 
     // Export settings button
-    document.getElementById('export-settings').addEventListener('click', exportSettings);
+    const exportBtn = document.getElementById('export-settings');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportSettings);
+    }
 
     // Import settings button
-    document.getElementById('import-settings').addEventListener('click', importSettings);
+    const importBtn = document.getElementById('import-settings');
+    if (importBtn) {
+        importBtn.addEventListener('click', importSettings);
+    }
 });
