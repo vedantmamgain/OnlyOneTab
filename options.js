@@ -123,10 +123,10 @@ function loadSettings() {
     chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
         // Set mode - use toggle instead of radio buttons
         let mode = data.mode || 'specific';
-        const patterns = data.domainPatterns || [];
+        const loadedPatterns = data.domainPatterns || [];
 
         // Smart fallback: If specific mode but no patterns, switch to all
-        if (mode === 'specific' && patterns.length === 0) {
+        if (mode === 'specific' && loadedPatterns.length === 0) {
             mode = 'all';
             chrome.storage.sync.set({ mode: 'all' }); // Persist the fix
         }
@@ -137,7 +137,7 @@ function loadSettings() {
             updateToggleLabels(mode);
         }
 
-        // Load patterns
+        // Load patterns - Update the global patterns variable
         patterns = data.domainPatterns || [];
         displayPatterns();
 
