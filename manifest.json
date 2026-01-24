@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "OnlyOneTab",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Ensures only one tab per domain remains open. Automatically switches to existing tab when trying to open duplicate.",
   "permissions": [
     "tabs",
