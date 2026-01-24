@@ -118,12 +118,28 @@ function autoSaveMode(mode) {
     });
 }
 
+// Auto-save limit setting
+function autoSaveLimit(limitEnabled) {
+    chrome.storage.sync.set({ limitEnabled }, () => {
+        showToast('Limit setting saved automatically');
+    });
+}
+
+// Auto-save group setting
+function autoSaveGroup(groupEnabled) {
+    chrome.storage.sync.set({ groupEnabled }, () => {
+        showToast('Group setting saved automatically');
+    });
+}
+
 // Load settings on page load
 function loadSettings() {
-    chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
+    chrome.storage.sync.get(['mode', 'domainPatterns', 'limitEnabled', 'groupEnabled'], (data) => {
         // Set mode - use toggle instead of radio buttons
         let mode = data.mode || 'specific';
         const loadedPatterns = data.domainPatterns || [];
+        let limitEnabled = data.limitEnabled !== false; // default true
+        let groupEnabled = data.groupEnabled || false;
 
         // Smart fallback: If specific mode but no patterns, switch to all
         if (mode === 'specific' && loadedPatterns.length === 0) {
@@ -131,10 +147,20 @@ function loadSettings() {
             chrome.storage.sync.set({ mode: 'all' }); // Persist the fix
         }
 
-        const toggleInput = document.getElementById('mode-toggle');
-        if (toggleInput) {
-            toggleInput.checked = (mode === 'specific');
+        const modeToggle = document.getElementById('mode-toggle');
+        if (modeToggle) {
+            modeToggle.checked = (mode === 'specific');
             updateToggleLabels(mode);
+        }
+
+        const limitCheckbox = document.getElementById('limit-enabled');
+        if (limitCheckbox) {
+            limitCheckbox.checked = limitEnabled;
+        }
+
+        const groupCheckbox = document.getElementById('group-enabled');
+        if (groupCheckbox) {
+            groupCheckbox.checked = groupEnabled;
         }
 
         // Load patterns - Update the global patterns variable
@@ -161,6 +187,8 @@ function updateToggleLabels(mode) {
         }
     }
 }
+
+
 
 // Display patterns
 function displayPatterns() {
@@ -359,9 +387,11 @@ function showStatus(message, type = 'success') {
 
 // Export settings
 function exportSettings() {
-    chrome.storage.sync.get(['mode', 'domainPatterns'], (data) => {
+    chrome.storage.sync.get(['mode', 'domainPatterns', 'limitEnabled', 'groupEnabled'], (data) => {
         const settings = {
             mode: data.mode || 'all',
+            limitEnabled: data.limitEnabled !== false,
+            groupEnabled: data.groupEnabled || false,
             patterns: data.domainPatterns || []
         };
 
@@ -395,6 +425,8 @@ function importSettings() {
                 if (settings.patterns && Array.isArray(settings.patterns)) {
                     chrome.storage.sync.set({
                         mode: settings.mode || 'specific',
+                        limitEnabled: settings.limitEnabled !== false,
+                        groupEnabled: settings.groupEnabled || false,
                         domainPatterns: settings.patterns
                     }, () => {
                         loadSettings();
@@ -429,6 +461,22 @@ document.addEventListener('DOMContentLoaded', () => {
             updateToggleLabels(mode);
             updatePatternsVisibility(mode);
             autoSaveMode(mode);
+        });
+    }
+
+    // Checkbox for limit enabled
+    const limitCheckbox = document.getElementById('limit-enabled');
+    if (limitCheckbox) {
+        limitCheckbox.addEventListener('change', (e) => {
+            autoSaveLimit(e.target.checked);
+        });
+    }
+
+    // Checkbox for group enabled
+    const groupCheckbox = document.getElementById('group-enabled');
+    if (groupCheckbox) {
+        groupCheckbox.addEventListener('change', (e) => {
+            autoSaveGroup(e.target.checked);
         });
     }
 

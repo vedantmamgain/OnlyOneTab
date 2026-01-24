@@ -75,6 +75,36 @@
                     </div>
                 </div>
 
+                <!-- Action Options Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Action Options</h2>
+                        <p class="card-description">Configure how OnlyOneTab handles tabs</p>
+                    </div>
+                    <div class="card-content space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="text-sm font-medium">Limit to One Tab</label>
+                                <p class="text-xs text-muted-foreground">Automatically close duplicate tabs and switch to existing</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="limit-enabled" class="switch-input">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <label class="text-sm font-medium">Auto-Group Tabs</label>
+                                <p class="text-xs text-muted-foreground">Automatically group related tabs together visually</p>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="group-enabled" class="switch-input">
+                                <span class="switch-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Domain Patterns Card -->
                 <div class="card" id="patterns-section">
                     <div class="card-header">

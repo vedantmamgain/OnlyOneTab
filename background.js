@@ -1,10 +1,29 @@
 // Store tracked domain patterns and their settings
 let domainPatterns = [];
+let limitEnabled = true;
+let groupEnabled = false;
 
-// Load saved patterns from storage
-chrome.storage.sync.get(['domainPatterns'], (data) => {
+// Load saved patterns and settings from storage
+chrome.storage.sync.get(['domainPatterns', 'limitEnabled', 'groupEnabled'], (data) => {
   if (data.domainPatterns) {
     domainPatterns = data.domainPatterns;
+  }
+  limitEnabled = data.limitEnabled !== false;
+  groupEnabled = data.groupEnabled || false;
+});
+
+// Listen for storage changes to update settings
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'sync') {
+    if (changes.domainPatterns) {
+      domainPatterns = changes.domainPatterns.newValue || [];
+    }
+    if (changes.limitEnabled) {
+      limitEnabled = changes.limitEnabled.newValue !== false;
+    }
+    if (changes.groupEnabled) {
+      groupEnabled = changes.groupEnabled.newValue || false;
+    }
   }
 });
 
@@ -86,6 +105,29 @@ function getTrackingKey(url) {
   return null;
 }
 
+// Get or create a tab group for the given key in the window
+async function getOrCreateTabGroup(key, windowId) {
+  if (!chrome.tabGroups) {
+    console.warn('Tab Groups API not available.');
+    return null;
+  }
+
+  try {
+    // Query for existing group with the title in this window
+    const groups = await chrome.tabGroups.query({ title: key });
+    const existingGroup = groups.find(g => g.windowId === windowId);
+    if (existingGroup) {
+      return existingGroup.id;
+    } else {
+      // No existing group, return null to indicate creation needed
+      return null;
+    }
+  } catch (error) {
+    console.error('Error querying tab groups:', error);
+    return null;
+  }
+}
+
 // Check if a URL should be tracked
 async function shouldTrackUrl(url) {
   return new Promise((resolve) => {
@@ -157,23 +199,41 @@ async function handleTabUpdate(tab) {
   const { track, key } = await shouldTrackUrl(tab.url);
   if (!track || !key) return;
 
-  // Find existing tab for this tracking group
-  const existingTab = await findExistingTab(key, tab.id);
+  if (groupEnabled) {
+    // Group the tab
+    const groupId = await getOrCreateTabGroup(key, tab.windowId);
+    try {
+      if (groupId !== null) {
+        await chrome.tabs.group({ tabIds: [tab.id], groupId });
+      } else {
+        // Create new group
+        const newGroupId = await chrome.tabs.group({ tabIds: [tab.id] });
+        await chrome.tabGroups.update(newGroupId, { title: key });
+      }
+    } catch (error) {
+      console.error('Error grouping tab:', error);
+    }
+  }
 
-  if (existingTab) {
-    // Switch to existing tab
-    await chrome.tabs.update(existingTab.id, { active: true });
-    await chrome.windows.update(existingTab.windowId, { focused: true });
+  if (limitEnabled) {
+    // Find existing tab for this tracking group
+    const existingTab = await findExistingTab(key, tab.id);
 
-    // Close the new duplicate tab
-    await chrome.tabs.remove(tab.id);
+    if (existingTab) {
+      // Switch to existing tab
+      await chrome.tabs.update(existingTab.id, { active: true });
+      await chrome.windows.update(existingTab.windowId, { focused: true });
 
-    // Show notification (optional)
-    chrome.action.setBadgeText({ text: '1' });
-    chrome.action.setBadgeBackgroundColor({ color: '#4CAF50' });
-    setTimeout(() => {
-      chrome.action.setBadgeText({ text: '' });
-    }, 2000);
+      // Close the new duplicate tab
+      await chrome.tabs.remove(tab.id);
+
+      // Show notification (optional)
+      chrome.action.setBadgeText({ text: '1' });
+      chrome.action.setBadgeBackgroundColor({ color: '#4CAF50' });
+      setTimeout(() => {
+        chrome.action.setBadgeText({ text: '' });
+      }, 2000);
+    }
   }
 }
 
@@ -231,6 +291,55 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'getPatterns') {
     chrome.storage.sync.get(['domainPatterns'], (data) => {
       sendResponse({ patterns: data.domainPatterns || [] });
+    });
+    return true;
+  }
+
+  if (request.action === 'groupAllRelatedTabs') {
+    chrome.tabs.query({}, async (tabs) => {
+      // Group tabs by window first
+      const tabsByWindow = {};
+      for (const tab of tabs) {
+        if (!tabsByWindow[tab.windowId]) tabsByWindow[tab.windowId] = [];
+        tabsByWindow[tab.windowId].push(tab);
+      }
+
+      // For each window, group tabs by key
+      for (const windowId in tabsByWindow) {
+        const windowTabs = tabsByWindow[windowId];
+        const tabGroups = {};
+
+        for (const tab of windowTabs) {
+          if (tab.url) {
+            const { track, key } = await shouldTrackUrl(tab.url);
+            if (track && key) {
+              if (!tabGroups[key]) tabGroups[key] = [];
+              tabGroups[key].push(tab);
+            }
+          }
+        }
+
+        for (const [key, tabsForKey] of Object.entries(tabGroups)) {
+          if (tabsForKey.length > 1) {
+            const groupId = await getOrCreateTabGroup(key, windowId);
+            try {
+              if (groupId !== null) {
+                const tabIds = tabsForKey.map(t => t.id);
+                await chrome.tabs.group({ tabIds, groupId });
+              } else {
+                // Create new group
+                const tabIds = tabsForKey.map(t => t.id);
+                const newGroupId = await chrome.tabs.group({ tabIds });
+                await chrome.tabGroups.update(newGroupId, { title: key });
+              }
+            } catch (error) {
+              console.error('Error grouping tabs for key:', key, error);
+            }
+          }
+        }
+      }
+
+      sendResponse({ success: true });
     });
     return true;
   }

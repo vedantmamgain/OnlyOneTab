@@ -26,14 +26,26 @@ async function loadPopupData() {
         document.getElementById('current-domain').textContent = currentDomain;
 
         // Get tracking mode and patterns
-        chrome.storage.sync.get(['mode', 'domainPatterns'], async (data) => {
+        chrome.storage.sync.get(['mode', 'domainPatterns', 'limitEnabled', 'groupEnabled'], async (data) => {
             let mode = data.mode || 'specific';
             const patterns = data.domainPatterns || [];
+            let limitEnabled = data.limitEnabled !== false;
+            let groupEnabled = data.groupEnabled || false;
 
             // Smart fallback: If specific mode but no patterns, switch to all
             if (mode === 'specific' && patterns.length === 0) {
                 mode = 'all';
                 chrome.storage.sync.set({ mode: 'all' }); // Persist the fix
+            }
+
+            // Set toggles
+            const limitCheckbox = document.getElementById('popup-limit-enabled');
+            if (limitCheckbox) {
+                limitCheckbox.checked = limitEnabled;
+            }
+            const groupCheckbox = document.getElementById('popup-group-enabled');
+            if (groupCheckbox) {
+                groupCheckbox.checked = groupEnabled;
             }
 
             // Check if current tab matches any pattern
@@ -351,4 +363,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Merge windows
     document.getElementById('merge-windows').addEventListener('click', mergeAllWindows);
+
+    // Group related tabs
+    document.getElementById('group-related-tabs').addEventListener('click', () => {
+        chrome.runtime.sendMessage({ action: 'groupAllRelatedTabs' }, (response) => {
+            if (response && response.success) {
+                // Maybe show a toast or refresh
+                loadPopupData();
+            }
+        });
+    });
+
+    // Settings toggles
+    document.getElementById('popup-limit-enabled').addEventListener('change', (e) => {
+        chrome.storage.sync.set({ limitEnabled: e.target.checked });
+    });
+
+    document.getElementById('popup-group-enabled').addEventListener('change', (e) => {
+        chrome.storage.sync.set({ groupEnabled: e.target.checked });
+    });
 });

@@ -5,7 +5,8 @@
   "description": "Ensures only one tab per domain remains open. Automatically switches to existing tab when trying to open duplicate.",
   "permissions": [
     "tabs",
-    "storage"
+    "storage",
+    "tabGroups"
   ],
   "host_permissions": [
     "<all_urls>"
