@@ -367,8 +367,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Group related tabs
     document.getElementById('group-related-tabs').addEventListener('click', () => {
         chrome.runtime.sendMessage({ action: 'groupAllRelatedTabs' }, (response) => {
+            if (chrome.runtime.lastError) {
+                console.error('Error grouping tabs:', chrome.runtime.lastError);
+                return;
+            }
             if (response && response.success) {
-                // Maybe show a toast or refresh
                 loadPopupData();
             }
         });

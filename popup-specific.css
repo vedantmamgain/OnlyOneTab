@@ -396,13 +396,25 @@ body {
     flex: 1;
 }
 
-/* Small Switch */
+/* Small Switch - Override for popup's compact layout */
+.switch-sm {
+    width: 28px;
+    height: 16px;
+}
+
 .switch-sm .switch-slider {
     width: 28px;
     height: 16px;
+    border-radius: 16px;
 }
 
 .switch-sm .switch-slider:before {
     height: 12px;
     width: 12px;
+    left: 2px;
+    bottom: 2px;
+}
+
+.switch-sm input:checked + .switch-slider:before {
+    transform: translateX(12px);
 }

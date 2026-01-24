@@ -9,12 +9,13 @@ OnlyOneTab is a smart Chrome extension that automatically detects and closes dup
 ## ✨ Features
 
   * **🎯 Smart De-duplication:** Automatically switches you to an existing tab instead of opening a new one.
+  * **📁 Tab Grouping:** Automatically group related tabs by domain using Chrome's native Tab Groups feature.
   * **⚙️ Granular Control:** You decide which sites are tracked. Use global tracking or define specific rules for high-noise apps.
   * **⚡ Quick Templates:** One-click setup for popular tools like **WhatsApp, Slack, Notion, and Google Workspace**.
   * **🔍 Flexible Pattern Matching:**
       * **Exact Match:** Lock down specific subdomains (e.g., `web.whatsapp.com`).
       * **Wildcards:** manage entire ecosystems (e.g., `*.google.com`).
-  * **🧹 Housekeeping Tools:** Instant buttons to "Close All Duplicates" or "Merge All Windows."
+  * **🧹 Housekeeping Tools:** Instant buttons to "Close All Duplicates", "Merge All Windows", or "Group Related Tabs."
 
 -----
 
@@ -34,6 +35,23 @@ For every pattern, you can decide how tabs are treated:
 
 1.  **By Subdomain:** `mail.google.com` and `drive.google.com` are treated as **separate** tabs.
 2.  **All as One:** All pages under `github.com` (issues, PRs, code) are treated as **one** single tab.
+
+-----
+
+## ⚙️ Settings Toggles
+
+OnlyOneTab provides two main behavior toggles (available in popup and options page):
+
+| Toggle | Default | Description |
+| :--- | :--- | :--- |
+| **Limit to One Tab** | ✅ On | Automatically close duplicate tabs and switch to the existing one |
+| **Auto-Group Tabs** | ❌ Off | Automatically group related tabs together using Chrome Tab Groups |
+
+### How Auto-Group Works
+
+- Groups are only created when there are **2 or more tabs** from the same domain
+- Single tabs remain ungrouped until a second tab from the same domain is opened
+- Use the **"Group Related Tabs"** button in the popup to manually group all existing tabs by domain
 
 -----
 

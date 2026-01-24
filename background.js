@@ -106,25 +106,27 @@ function getTrackingKey(url) {
 }
 
 // Get or create a tab group for the given key in the window
+// Returns: { groupId: number } on success, { groupId: null } if no group exists, { error: Error } on failure
 async function getOrCreateTabGroup(key, windowId) {
   if (!chrome.tabGroups) {
     console.warn('Tab Groups API not available.');
-    return null;
+    return { error: new Error('Tab Groups API not available') };
   }
 
   try {
     // Query for existing group with the title in this window
-    const groups = await chrome.tabGroups.query({ title: key });
-    const existingGroup = groups.find(g => g.windowId === windowId);
-    if (existingGroup) {
-      return existingGroup.id;
+    // Use windowId filter directly in query for efficiency
+    const numericWindowId = typeof windowId === 'string' ? parseInt(windowId, 10) : windowId;
+    const groups = await chrome.tabGroups.query({ title: key, windowId: numericWindowId });
+    if (groups.length > 0) {
+      return { groupId: groups[0].id };
     } else {
-      // No existing group, return null to indicate creation needed
-      return null;
+      // No existing group
+      return { groupId: null };
     }
   } catch (error) {
     console.error('Error querying tab groups:', error);
-    return null;
+    return { error };
   }
 }
 
@@ -177,9 +179,13 @@ async function findExistingTab(trackingKey, currentTabId) {
 chrome.tabs.onCreated.addListener(async (tab) => {
   // Wait a bit for the URL to be set
   setTimeout(async () => {
-    const updatedTab = await chrome.tabs.get(tab.id);
-    if (updatedTab.url && updatedTab.url !== 'chrome://newtab/') {
-      handleTabUpdate(updatedTab);
+    try {
+      const updatedTab = await chrome.tabs.get(tab.id);
+      if (updatedTab.url && updatedTab.url !== 'chrome://newtab/') {
+        handleTabUpdate(updatedTab);
+      }
+    } catch (error) {
+      // Tab was closed before we could process it - ignore
     }
   }, 100);
 });
@@ -200,18 +206,41 @@ async function handleTabUpdate(tab) {
   if (!track || !key) return;
 
   if (groupEnabled) {
-    // Group the tab
-    const groupId = await getOrCreateTabGroup(key, tab.windowId);
-    try {
-      if (groupId !== null) {
-        await chrome.tabs.group({ tabIds: [tab.id], groupId });
-      } else {
-        // Create new group
-        const newGroupId = await chrome.tabs.group({ tabIds: [tab.id] });
-        await chrome.tabGroups.update(newGroupId, { title: key });
+    // Check if a group already exists for this domain
+    const result = await getOrCreateTabGroup(key, tab.windowId);
+    if (result.error) {
+      console.error('Error getting tab group:', result.error);
+    } else if (result.groupId !== null) {
+      // Group exists, add this tab to it
+      try {
+        await chrome.tabs.group({ tabIds: [tab.id], groupId: result.groupId });
+      } catch (error) {
+        console.error('Error adding tab to group:', error);
       }
-    } catch (error) {
-      console.error('Error grouping tab:', error);
+    } else {
+      // No group exists - only create one if there are other tabs with the same tracking key
+      const allTabs = await chrome.tabs.query({ windowId: tab.windowId });
+      const sameKeyTabs = [];
+      for (const t of allTabs) {
+        if (t.id !== tab.id && t.url) {
+          const result = await shouldTrackUrl(t.url);
+          if (result.track && result.key === key) {
+            sameKeyTabs.push(t);
+          }
+        }
+      }
+
+      if (sameKeyTabs.length > 0) {
+        // Found other tabs with same tracking key - create group with all of them
+        try {
+          const tabIds = [tab.id, ...sameKeyTabs.map(t => t.id)];
+          const newGroupId = await chrome.tabs.group({ tabIds });
+          await chrome.tabGroups.update(newGroupId, { title: key });
+        } catch (error) {
+          console.error('Error creating tab group:', error);
+        }
+      }
+      // If no other tabs with same key, don't create a group for single tab
     }
   }
 
@@ -297,38 +326,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
   if (request.action === 'groupAllRelatedTabs') {
     chrome.tabs.query({}, async (tabs) => {
-      // Group tabs by window first
-      const tabsByWindow = {};
+      // Group tabs by window first (use Map to preserve numeric keys)
+      const tabsByWindow = new Map();
       for (const tab of tabs) {
-        if (!tabsByWindow[tab.windowId]) tabsByWindow[tab.windowId] = [];
-        tabsByWindow[tab.windowId].push(tab);
+        if (!tabsByWindow.has(tab.windowId)) tabsByWindow.set(tab.windowId, []);
+        tabsByWindow.get(tab.windowId).push(tab);
       }
 
-      // For each window, group tabs by key
-      for (const windowId in tabsByWindow) {
-        const windowTabs = tabsByWindow[windowId];
+      // For each window, group tabs by domain (regardless of tracking settings)
+      for (const [windowId, windowTabs] of tabsByWindow) {
         const tabGroups = {};
 
         for (const tab of windowTabs) {
-          if (tab.url) {
-            const { track, key } = await shouldTrackUrl(tab.url);
-            if (track && key) {
-              if (!tabGroups[key]) tabGroups[key] = [];
-              tabGroups[key].push(tab);
+          // Group ALL tabs by domain, not just tracked ones
+          if (tab.url && !tab.url.startsWith('chrome://') && !tab.url.startsWith('chrome-extension://')) {
+            const domain = getDomainFromUrl(tab.url);
+            if (domain) {
+              if (!tabGroups[domain]) tabGroups[domain] = [];
+              tabGroups[domain].push(tab);
             }
           }
         }
 
         for (const [key, tabsForKey] of Object.entries(tabGroups)) {
           if (tabsForKey.length > 1) {
-            const groupId = await getOrCreateTabGroup(key, windowId);
+            const result = await getOrCreateTabGroup(key, windowId);
+            if (result.error) {
+              console.error('Error getting tab group for key:', key, result.error);
+              continue;
+            }
             try {
-              if (groupId !== null) {
-                const tabIds = tabsForKey.map(t => t.id);
-                await chrome.tabs.group({ tabIds, groupId });
+              const tabIds = tabsForKey.map(t => t.id);
+              if (result.groupId !== null) {
+                await chrome.tabs.group({ tabIds, groupId: result.groupId });
               } else {
                 // Create new group
-                const tabIds = tabsForKey.map(t => t.id);
                 const newGroupId = await chrome.tabs.group({ tabIds });
                 await chrome.tabGroups.update(newGroupId, { title: key });
               }
